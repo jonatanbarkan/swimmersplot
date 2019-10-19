@@ -25,7 +25,7 @@ def read_csv(file_path, func, delimiter=';'):
     with open(file_path, 'r') as f:
         reader = csv.reader(f, delimiter=delimiter)
         for row in reader:
-            temp.append(array([func(r) for r in row if r]))
+            temp.append(array([func(r) if r else "" for r in row]))
     return temp
 
 

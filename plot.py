@@ -8,7 +8,7 @@ from utils import split_spines, adjust_legend, read_csv, label_bin_values
 from argparse import ArgumentParser
 style.use('seaborn-paper')
 colors = ['r', 'g', 'b', 'c', 'o']
-markers = ["o", "+", "s", "*", '8']
+markers = ["+", "s", "*", '8', ">", "1"]
 
 if __name__ == '__main__':
     months_path = 'months_demo.csv'
@@ -26,22 +26,33 @@ if __name__ == '__main__':
     points = []
     kinds = set()
     for i, (m, v, t) in enumerate(zip(months, values, types)):
+        print('patient {}'.format(i, ))
         length = len(m)
         binned_v = np.digitize(v, value_bins)
         for j in range(length):
-            points.append(Point(i + 1, m[j], v[j], binned_v[j], t[j]))
-            # if t[j]:
-            kinds.add(t[j])
+            if m[j]:  # to remove empty cells
+                try:
+                    tp = t[j]
+                    kinds.add(tp)
+                except IndexError:
+                    tp = ""
+                print(tp)
+                points.append(Point(i + 1, m[j], v[j], binned_v[j], tp))
+            else:
+                continue
     kinds = list(kinds)
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
     count_patients = 0
     for p1, p2 in zip(points[:-1], points[1:]):
-        ax.plot(p1.month, p1.patient, marker=markers[kinds.index(p1.kind)], c='k', markeredgewidth=3, markeredgecolor='k')
+        if p1.kind:
+            ax.plot(p1.month, p1.patient, marker=markers[kinds.index(p1.kind)], c='k', markeredgewidth=1, markeredgecolor='k')
         if p1.patient == p2.patient:
             ax.plot([p1.month, p2.month], [p1.patient, p2.patient], c=colors[p1.binned], lw=10, alpha=0.3, solid_capstyle='projecting', solid_joinstyle='miter')
         else:
-            ax.plot(p2.month, p2.patient, marker=markers[kinds.index(p2.kind)], c='k')
+            if p2.kind:
+                ax.plot(p2.month, p2.patient, marker=markers[kinds.index(p2.kind)], c='w')
             count_patients += 1
 
     split_spines(ax)
