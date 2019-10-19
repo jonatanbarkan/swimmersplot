@@ -9,7 +9,7 @@ from utils import split_spines, adjust_legend, read_csv, label_bin_values, combi
 from argparse import ArgumentParser
 style.use('seaborn-paper')
 colors = ['r', 'b', 'g', 'c', 'o']
-markers = ["+", "s", "*", '8', ">", "1"]
+markers = [">", "*", "s", '8', "P", "1"]
 
 if __name__ == '__main__':
     dfs = pd.read_excel('demo.xlsx', sheet_name=None, header=None, )
@@ -53,19 +53,25 @@ if __name__ == '__main__':
     fig = plt.figure()
     ax = fig.add_subplot(111)
     count_patients = 0
+    first = 0
+    last_marker = -1
     for p1, p2 in zip(points[:-1], points[1:]):
-        if p1.kind:
-            ax.plot(p1.month, p1.patient, marker=markers[kinds.index(p1.kind)], c='k', markeredgewidth=1, markeredgecolor='k')
-        if p1.patient == p2.patient:
-            ax.plot([p1.month, p2.month], [p1.patient, p2.patient], c=colors[p1.binned], lw=10, alpha=0.3, solid_capstyle='projecting', solid_joinstyle='miter')
-        else:
+        if p1.binned != p2.binned or p2.kind:
             if p2.kind:
-                ax.plot(p2.month, p2.patient, marker=markers[kinds.index(p2.kind)], c='k')
+                ax.plot(p2.month, p2.patient, marker=markers[kinds.index(p2.kind)], c='k', markeredgewidth=1, markeredgecolor='k')
+                last_marker = p2.month
+            if p1.patient == p2.patient:
+                # ax.plot([first, p2.month], [p1.patient, p1.patient], c=colors[p1.binned], lw=10, alpha=0.3, solid_capstyle='projecting', solid_joinstyle='miter')
+                ax.plot([first, p2.month], [p1.patient, p1.patient], c=colors[p1.binned], lw=10, alpha=0.3, solid_capstyle='projecting')
+            first = p2.month + 1
+        if p1.patient != p2.patient:
             count_patients += 1
+            # ax.plot([first, max(last_marker, p1.month)], [p1.patient, p1.patient], c=colors[p1.binned], lw=10, alpha=0.3, solid_capstyle='projecting', solid_joinstyle='miter')
+            ax.plot([first, max(last_marker, p1.month)], [p1.patient, p1.patient], c=colors[p1.binned], lw=10, alpha=0.3, solid_capstyle='projecting')
+            first = 0
+            last_marker = -1
 
     split_spines(ax)
-    # ax.set_yticks(range(1, count_patients + 2))
-    # ax.set_xticks(range(0, M + 1, 3))
     ax.set_xlabel('Months')
     ax.set_ylabel('Patients')
 
