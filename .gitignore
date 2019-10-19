@@ -1,4 +1,6 @@
 
+*.xlsx
+
 # Created by https://www.gitignore.io/api/audio,linux,video,python,opencv,pycharm,windows,microsoftoffice
 # Edit at https://www.gitignore.io/?templates=audio,linux,video,python,opencv,pycharm,windows,microsoftoffice
 

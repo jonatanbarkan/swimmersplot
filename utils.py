@@ -13,6 +13,10 @@ def adjust_legend(legend: Union[plt.legend, List[plt.legend]]):
         lg.get_frame().set_edgecolor('k')
 
 
+def combine(a, b):
+    return a, b
+
+
 def split_spines(axes):
     axes.spines['right'].set_visible(False)
     axes.spines['top'].set_visible(False)

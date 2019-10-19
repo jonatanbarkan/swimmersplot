@@ -1,22 +1,28 @@
 from collections import namedtuple
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt, patches as mpatches
 from matplotlib import style
 
-from utils import split_spines, adjust_legend, read_csv, label_bin_values
+from utils import split_spines, adjust_legend, read_csv, label_bin_values, combine
 from argparse import ArgumentParser
 style.use('seaborn-paper')
-colors = ['r', 'g', 'b', 'c', 'o']
+colors = ['r', 'b', 'g', 'c', 'o']
 markers = ["+", "s", "*", '8', ">", "1"]
 
 if __name__ == '__main__':
-    months_path = 'months_demo.csv'
-    months = read_csv(months_path, int)
-    values_path = 'values_demo.csv'
-    values = read_csv(values_path, int)
-    types_path = 'types_demo.csv'
-    types = read_csv(types_path, str)
+    dfs = pd.read_excel('demo.xlsx', sheet_name=None, header=None, )
+    dfs = {k.lower(): df for k, df in dfs.items()}
+    months = dfs['months']
+    values = dfs['values']
+    types = dfs['types'].fillna('')
+    # months_path = 'months_demo.csv'
+    # months = read_csv(months_path, int)
+    # values_path = 'values_demo.csv'
+    # values = read_csv(values_path, int)
+    # types_path = 'types_demo.csv'
+    # types = read_csv(types_path, str)
 
     base_name = 'EF'
     value_bins = [50]
@@ -25,21 +31,23 @@ if __name__ == '__main__':
     Point = namedtuple('Point', "patient month value binned kind")
     points = []
     kinds = set()
-    for i, (m, v, t) in enumerate(zip(months, values, types)):
+    M = 0
+    for i, (m, v, t) in enumerate(zip(months.values, values.values, types.values)):
         print('patient {}'.format(i, ))
+        m = m[np.isfinite(m)]
+        v = v[np.isfinite(v)]
         length = len(m)
+        if length > M:
+            M = length
         binned_v = np.digitize(v, value_bins)
         for j in range(length):
-            if m[j]:  # to remove empty cells
-                try:
-                    tp = t[j]
-                    kinds.add(tp)
-                except IndexError:
-                    tp = ""
-                print(tp)
-                points.append(Point(i + 1, m[j], v[j], binned_v[j], tp))
-            else:
-                continue
+            try:
+                tp = t[j]
+            except IndexError:
+                tp = ""
+            kinds.add(tp)
+            points.append(Point(i + 1, m[j], v[j], binned_v[j], tp))
+    kinds.remove("")
     kinds = list(kinds)
 
     fig = plt.figure()
@@ -52,11 +60,12 @@ if __name__ == '__main__':
             ax.plot([p1.month, p2.month], [p1.patient, p2.patient], c=colors[p1.binned], lw=10, alpha=0.3, solid_capstyle='projecting', solid_joinstyle='miter')
         else:
             if p2.kind:
-                ax.plot(p2.month, p2.patient, marker=markers[kinds.index(p2.kind)], c='w')
+                ax.plot(p2.month, p2.patient, marker=markers[kinds.index(p2.kind)], c='k')
             count_patients += 1
 
     split_spines(ax)
-    ax.set_yticks(range(1, count_patients + 2))
+    # ax.set_yticks(range(1, count_patients + 2))
+    # ax.set_xticks(range(0, M + 1, 3))
     ax.set_xlabel('Months')
     ax.set_ylabel('Patients')
 
