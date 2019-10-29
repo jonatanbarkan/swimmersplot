@@ -52,6 +52,7 @@ if __name__ == '__main__':
     lines = []
     colors = []
     linestyles = []
+    end_values = []
     kinds = set()
     M = 0
     for i, (m, v, t) in enumerate(zip(months.values, values.values, types.values)):
@@ -97,9 +98,10 @@ if __name__ == '__main__':
             colors.append(current_color)
             linestyles.append('solid')
         # add last value as dashed line
-        lines.append([(last_month, current_patient), (last_month+6, current_patient)])
-        colors.append(select_color(v_drop[-1], v_under[-1]))
-        linestyles.append('dotted')
+        # lines.append([(last_month, current_patient), (last_month+1, current_patient)])
+        end_values.append((last_month, current_patient, select_color(v_drop[-1], v_under[-1])))
+        # colors.append(select_color(v_drop[-1], v_under[-1]))
+        # linestyles.append('dotted')
 
     kinds = list(kinds)
 
@@ -115,9 +117,11 @@ if __name__ == '__main__':
     ax.set_ylabel('Patients')
     ax.set_yticks(range(len(months) + 1))
     for p in points:
-        ax.plot(p.x, p.y, marker=marker_dict[p.kind], c='k', markeredgewidth=1, markeredgecolor='k')
+        ax.plot(p.x, p.y, marker=marker_dict[p.kind], c='k', markeredgewidth=.5, markeredgecolor='k')
+    for x, y, c in end_values:
+        ax.plot(x + 3, y, marker='s', markerfacecolor=c, alpha=alpha)
     values_handle = [mpatches.Patch(color=c, label=color_label_dict[l], alpha=alpha) for (l, c) in color_dict.items()]
-    marker_handle = [plt.plot([], [], marker=mark, ms=10, ls="", color='k', label=kind, markeredgewidth=1, markeredgecolor='k')[0] for kind, mark in marker_dict.items()]
+    marker_handle = [plt.plot([], [], marker=mark, ms=8, ls="", color='k', label=kind, markeredgewidth=1, markeredgecolor='k')[0] for kind, mark in marker_dict.items()]
     lg = plt.legend(handles=values_handle + marker_handle, loc='best')
     adjust_legend(lg)
     ax.add_artist(lg)
