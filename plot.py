@@ -38,12 +38,15 @@ def select_color(d, u):
 
 
 if __name__ == '__main__':
-    dfs = pd.read_excel('demo.xlsx', sheet_name=None, header=None, )
+    dfs = pd.read_excel('new_demo.xlsx', sheet_name=None, header=None, )
     dfs = {k.lower(): df for k, df in dfs.items()}
     months = dfs['months']
     values = dfs['values']
-    types = dfs['types'].fillna('')
-
+    types = dfs['types']
+    patients_types_missing = len(months) - len(types)
+    if patients_types_missing > 0:
+        types = types.append(pd.Series(), ignore_index=True)
+    types = types.fillna('')
     Point = namedtuple('Point', 'x y kind')
     points = []
     lines = []
@@ -110,6 +113,7 @@ if __name__ == '__main__':
     split_spines(ax)
     ax.set_xlabel('Months')
     ax.set_ylabel('Patients')
+    ax.set_yticks(range(len(months) + 1))
     for p in points:
         ax.plot(p.x, p.y, marker=marker_dict[p.kind], c='k', markeredgewidth=1, markeredgecolor='k')
     values_handle = [mpatches.Patch(color=c, label=color_label_dict[l], alpha=alpha) for (l, c) in color_dict.items()]
@@ -120,4 +124,4 @@ if __name__ == '__main__':
     ax.invert_yaxis()
     plt.pause(10)
     # plt.show()
-    fig.savefig('demo.png')
+    fig.savefig('new_demo.png')
